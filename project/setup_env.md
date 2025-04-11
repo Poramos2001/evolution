@@ -27,7 +27,7 @@ This initializes uv in your current directory.
 
 ### 2. Create a Virtual Environment
 ```bash
-uv venv python=python3.10
+uv venv --python=python3.10
 ```
 This creates a virtual environment using Python 3.10.
 
