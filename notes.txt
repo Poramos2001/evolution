@@ -6,10 +6,6 @@ o agente como um grafo, pq ele tem q ser completamente conectado
 (convexo), n adianta botar blocos n nulos q entre eles tem blocos nulos
 - pyribs pra fazer behaviour e novelty, ela consegue implementar map
 elites com cma daí ela é mais otimizada
-- pq o mutate_ga é basicamente trocar alguns genes por ruido vindo de
-uma gaussiana? pq n adicionar ruido ao parametro antigo? talvez ate 
+- pq n adicionar ruido ao parametro antigo? talvez ate 
 np.random.normal(0, sigma) em q sigma diminue com o tempo
 (sigma = 1-t/T, com t a geração atual e T o num max de gerações)
-- no get_cfg, o hsize eh suave? pq pro env thrower v0 o observation
-space tem dimensao 80, e n tinha um negocio da hidden layer ser no min
-x% maior q a entrada?
