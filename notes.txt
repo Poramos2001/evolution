@@ -6,6 +6,15 @@ o agente como um grafo, pq ele tem q ser completamente conectado
 (convexo), n adianta botar blocos n nulos q entre eles tem blocos nulos
 - pyribs pra fazer behaviour e novelty, ela consegue implementar map
 elites com cma daí ela é mais otimizada
-- pq n adicionar ruido ao parametro antigo? talvez ate 
-np.random.normal(0, sigma) em q sigma diminue com o tempo
-(sigma = 1-t/T, com t a geração atual e T o num max de gerações)
+- O behaviour space na real é uma separação finita do observation
+space, ent é esse q tem q ver
+====================================================================
+- primeiro só usa o cma pras politicas (sem considerar o budget)
+    - ATENÇÃO: lembra q sua rede neural é mais pesada q a dos outros,
+    tem mais feature mas daí vai ser trampo pra treinar
+- replica pros tres coisos
+- dá uma leve otimizada pra comparar
+- dps faz um branch e usa Warm Starting CMA-ES e vê a diferença
+- se der tempo, mexe tbm com a evolução do formato OU vê de adicionar
+behaviour and novelty na evolução das politicas, se for o tempo,
+perguntar pro prof o q ele recomenda
