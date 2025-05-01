@@ -18,3 +18,8 @@ space, ent é esse q tem q ver
 - se der tempo, mexe tbm com a evolução do formato OU vê de adicionar
 behaviour and novelty na evolução das politicas, se for o tempo,
 perguntar pro prof o q ele recomenda
+====================================================================
+- ler os negocio no copilot
+- atualizo notes
+- vejo como paralelizar
+- testar o com cmaes nos pc do CI

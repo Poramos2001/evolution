@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from cmaes import CMA
 
 
 class Network(nn.Module):
@@ -142,13 +143,15 @@ def make_env(env_name, seed=None, robot=None, **kwargs):
     return env
 
 
-def get_cfg(env_name, robot):
+def get_cfg(env_name, robot, n=None):
     env = make_env(env_name, robot=robot)
     cfg = {
         "n_in": env.observation_space.shape[0],
         "h_size": 32,
         "n_out": env.action_space.shape[0],
     }
+    if n is not None:
+        cfg["h_size"] = n*cfg["n_in"]
     env.close()
     return cfg
 
@@ -198,7 +201,8 @@ def generate_gif(gif_name='Robot.gif', a=None, env=None, solution_name=None):
 
 
 def ES(config):
-    cfg = get_cfg(config["env_name"], robot=config["robot"]) # Get network dims
+    cfg = get_cfg(config["env_name"], robot=config["robot"],
+                  n=config["n"]) # Get network dims
     cfg = {**config, **cfg} # Merge configs
     
     # Update weights
@@ -257,8 +261,59 @@ def ES(config):
         bar.set_description(f"Best: {elite.fitness}")
         
     env.close()
+    
+    plt.figure()
     plt.plot(total_evals, fits)
     plt.xlabel("Evaluations")
     plt.ylabel("Fitness")
-    plt.show()
+    plt.savefig(cfg["plot_name"])
+
+    return elite
+
+
+def CMAES(config):
+    cfg = get_cfg(config["env_name"], robot=config["robot"],
+                  n=config["n"]) # Get network dims
+    cfg = {**config, **cfg} # Merge configs
+    
+    env = make_env(cfg["env_name"], robot=cfg["robot"])
+
+    # Center of the distribution
+    elite = Agent(Network, cfg)
+
+    optimizer = CMA(mean=np.zeros(len(elite.genes)), sigma=cfg["sigma"],
+                    population_size=cfg["lambda"])
+
+    fits = []
+    total_evals = []
+
+    bar = tqdm(range(cfg["generations"]))
+    for gen in bar:
+        population = []
+        print('gen #', gen)
+        for _ in tqdm(range(optimizer.population_size)):
+            genes = optimizer.ask()
+            
+            ind = Agent(Network, cfg, genes=genes)
+            ind.fitness = evaluate(ind, env, max_steps=cfg["max_steps"])
+            population.append((genes, -ind.fitness))
+
+        optimizer.tell(population)
+
+        elite.genes = optimizer.mean
+        elite.fitness = evaluate(elite, env, max_steps=cfg["max_steps"])
+
+        fits.append(elite.fitness)
+        total_evals.append((len(population)+1) * (gen+1))
+
+        bar.set_description(f"Best: {elite.fitness}")
+        
+    env.close()
+
+    plt.figure()
+    plt.plot(total_evals, fits)
+    plt.xlabel("Evaluations")
+    plt.ylabel("Fitness")
+    plt.savefig(cfg["plot_name"])
+
     return elite
