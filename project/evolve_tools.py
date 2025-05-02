@@ -10,6 +10,7 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from cmaes import CMA
+import ray
 
 
 class Network(nn.Module):
@@ -106,6 +107,38 @@ class Agent:
         return actions
 
 
+class EvoGymEnv:
+    def __init__(self, env_name, robot):
+        import gymnasium as gym
+        import evogym.envs
+        self.env = gym.make(env_name, body=robot)
+        self.env_name = env_name
+        self.robot = robot
+        self.action_space = self.env.action_space
+        self.observation_space = self.env.observation_space
+
+    def __reduce__(self):
+        deserializer = self.__class__
+        serialized_data = (self.env_name, self.robot)
+        return deserializer, serialized_data
+
+    def reset(self):
+        """
+        Reset the environment and return the initial observation.
+        """
+        return self.env.reset()
+
+    def step(self, action):
+        """
+        Take a step in the environment with the given action.
+        """
+        obs, reward, done, trunc,  info = self.env.step(action)
+        return obs, reward, done, trunc, info
+    
+    def close(self):
+        return self.env.close()
+
+
 def save_solution(a, cfg, name="solution.json"):
     save_cfg = {}
     for i in ["env_name", "robot", "n_in", "h_size", "n_out"]:
@@ -156,8 +189,9 @@ def get_cfg(env_name, robot, n=None):
     return cfg
 
 
+@ray.remote
 def evaluate(agent, env, max_steps=500, render=False):
-    obs, i = env.reset()
+    obs, _ = env.reset()
     agent.model.reset()
     reward = 0
     steps = 0
@@ -169,7 +203,7 @@ def evaluate(agent, env, max_steps=500, render=False):
             img = env.render() #mode='img'
             imgs.append(img)
         action = agent.act(obs)
-        obs, r, done, trunc,  _ = env.step(action)
+        obs, r, done, _,  _ = env.step(action)
         reward += r
         steps += 1
         
@@ -211,7 +245,7 @@ def ES(config):
                           for i in range(1, mu + 1)])
     w /= np.sum(w)
     
-    env = make_env(cfg["env_name"], robot=cfg["robot"])
+    env = EvoGymEnv(cfg["env_name"], cfg["robot"])
 
     # Center of the distribution
     elite = Agent(Network, cfg)
@@ -230,8 +264,9 @@ def ES(config):
             ind = Agent(Network, cfg, genes=genes)
             population.append(ind)
 
-        pop_fitness = [evaluate(a, env, max_steps=cfg["max_steps"]) 
+        tasks = [evaluate.remote(a, env, max_steps=cfg["max_steps"]) 
                        for a in population]
+        pop_fitness = ray.get(tasks)
         
         for i in range(len(population)):
             population[i].fitness = pop_fitness[i]

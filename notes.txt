@@ -9,22 +9,19 @@ elites com cma daí ela é mais otimizada
 - O behaviour space na real é uma separação finita do observation
 space, ent é esse q tem q ver
 ====================================================================
-- entender a paralelização
-- testar o cmaes no CI
-- levar as conclusoes pro paul e perguntar qual algo usar
+OK entender a paralelização 
+- testar o cmaes
 - primeiro só usa o algoritmo ganhador pras politicas (sem considerar o budget)
     - ATENÇÃO: lembra q sua rede neural é mais pesada q a dos outros,
     tem mais feature mas daí vai ser trampo pra treinar
 - replica pros tres coisos
-- dá uma leve otimizada pra comparar
+- dá uma otimizada 
+- testar o cmaes no CI
+- perguntar pro Paul o pq do cmaes demorar tanto no ask e o ES n
 - se der tempo, mexe tbm com a evolução do formato OU vê de adicionar
 behaviour and novelty na evolução das politicas, se for o tempo,
 perguntar pro prof o q ele recomenda
 ====================================================================
-- escrever codigo pra rodar cmaes nos pc do CI
-    - primeiro o msm q eu fiz no meu pc
-    - dps um com n=1 pra ver como ele reage
-- testar o com cmaes nos pc do CI
-- vejo como paralelizar
+- terminar o teste do cmaes
 - incrementar o codigo do ES pra mostrar o gif tbm
 - ir otimizando o ES

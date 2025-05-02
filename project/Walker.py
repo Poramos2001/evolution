@@ -21,7 +21,7 @@ config = {
     "max_steps": 100, # to change to 500
     "plot_name": "ES.png",
     "plot":False,
-    "n": 1 # The network h_size = n*n_in, None sets h_size to 32
+    "n": 3 # The network h_size = n*n_in, None sets h_size to 32
 }
 
 for i in range(3):
