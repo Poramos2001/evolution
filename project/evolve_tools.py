@@ -230,9 +230,6 @@ def ES(config):
             ind = Agent(Network, cfg, genes=genes)
             population.append(ind)
 
-        # with Pool(processes=len(population)) as pool:
-        #     pop_fitness = pool.starmap(mp_eval, [(a, cfg) for a in population])
-        
         pop_fitness = [evaluate(a, env, max_steps=cfg["max_steps"]) 
                        for a in population]
         
@@ -262,11 +259,12 @@ def ES(config):
         
     env.close()
     
-    plt.figure()
-    plt.plot(total_evals, fits)
-    plt.xlabel("Evaluations")
-    plt.ylabel("Fitness")
-    plt.savefig(cfg["plot_name"])
+    if config['plot']:
+        plt.figure()
+        plt.plot(total_evals, fits)
+        plt.xlabel("Evaluations")
+        plt.ylabel("Fitness")
+        plt.savefig(cfg["plot_name"])
 
     return elite
 
@@ -290,8 +288,10 @@ def CMAES(config):
     bar = tqdm(range(cfg["generations"]))
     for gen in bar:
         population = []
-        print('gen #', gen)
-        for _ in tqdm(range(optimizer.population_size)):
+        bar2 = tqdm(range(optimizer.population_size))
+        bar2.set_description(f'gen #{gen+1}')
+
+        for _ in bar2:
             genes = optimizer.ask()
             
             ind = Agent(Network, cfg, genes=genes)
@@ -310,10 +310,11 @@ def CMAES(config):
         
     env.close()
 
-    plt.figure()
-    plt.plot(total_evals, fits)
-    plt.xlabel("Evaluations")
-    plt.ylabel("Fitness")
-    plt.savefig(cfg["plot_name"])
+    if config['plot']:
+        plt.figure()
+        plt.plot(total_evals, fits)
+        plt.xlabel("Evaluations")
+        plt.ylabel("Fitness")
+        plt.savefig(cfg["plot_name"])
 
     return elite

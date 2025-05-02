@@ -56,7 +56,7 @@ walker = np.array([
     ])
 env = EvoGymEnv("Walker-v0", walker)
 
-nb_evals = 10
+nb_evals = 16
 #  Check time series
 t_0 = time.time()
 for _ in range(nb_evals):
