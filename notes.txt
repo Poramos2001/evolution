@@ -22,6 +22,7 @@ OK entender a paralelização
 behaviour and novelty na evolução das politicas, se for o tempo,
 perguntar pro prof o q ele recomenda
 ====================================================================
+- paralelizar cmaes
 - terminar o teste do cmaes
 - incrementar o codigo do ES pra mostrar o gif tbm
 - ir otimizando o ES

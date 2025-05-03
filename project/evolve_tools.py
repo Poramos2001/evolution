@@ -309,7 +309,7 @@ def CMAES(config):
                   n=config["n"]) # Get network dims
     cfg = {**config, **cfg} # Merge configs
     
-    env = make_env(cfg["env_name"], robot=cfg["robot"])
+    env = EvoGymEnv(cfg["env_name"], cfg["robot"])
 
     # Center of the distribution
     elite = Agent(Network, cfg)
@@ -323,6 +323,7 @@ def CMAES(config):
     bar = tqdm(range(cfg["generations"]))
     for gen in bar:
         population = []
+        genetic_material = []
         bar2 = tqdm(range(optimizer.population_size))
         bar2.set_description(f'gen #{gen+1}')
 
@@ -330,14 +331,22 @@ def CMAES(config):
             genes = optimizer.ask()
             
             ind = Agent(Network, cfg, genes=genes)
-            ind.fitness = evaluate(ind, env, max_steps=cfg["max_steps"])
-            population.append((genes, -ind.fitness))
+            population.append(ind)
+            genetic_material.append(genes)
 
+        tasks = [evaluate.remote(a, env, max_steps=cfg["max_steps"]) 
+                       for a in population]
+        pop_fitness = ray.get(tasks)
+        pop_fitness = [-x for x in pop_fitness]
+
+        population = list(zip(genetic_material, pop_fitness))
         optimizer.tell(population)
 
         elite.genes = optimizer.mean
-        elite.fitness = evaluate(elite, env, max_steps=cfg["max_steps"])
-
+        tasks = evaluate.remote(elite, env, max_steps=cfg["max_steps"])
+        elite.fitness = ray.get(tasks)
+        elite.fitness = -elite.fitness
+        
         fits.append(elite.fitness)
         total_evals.append((len(population)+1) * (gen+1))
 
@@ -353,3 +362,8 @@ def CMAES(config):
         plt.savefig(cfg["plot_name"])
 
     return elite
+
+if __name__ == "__main__":
+    list = [1, 2, 3]
+    list = -list
+    print(list)

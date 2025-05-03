@@ -19,7 +19,7 @@ config = {
     "max_steps": 100, # to change to 500
     "plot_name": "CMAES.png",
     "plot":False,
-    "n": 1 # The network h_size = n*n_in, None sets h_size to 32
+    "n": None # The network h_size = n*n_in, None sets h_size to 32
 }
 
 for i in range(3):
