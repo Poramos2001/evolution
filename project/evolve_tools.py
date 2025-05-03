@@ -189,7 +189,6 @@ def get_cfg(env_name, robot, n=None):
     return cfg
 
 
-@ray.remote
 def evaluate(agent, env, max_steps=500, render=False):
     obs, _ = env.reset()
     agent.model.reset()
@@ -212,6 +211,23 @@ def evaluate(agent, env, max_steps=500, render=False):
     return reward
 
 
+@ray.remote
+def parallel_eval(agent, env, max_steps=500):
+    obs, _ = env.reset()
+    agent.model.reset()
+    reward = 0
+    steps = 0
+    done = False
+
+    while not done and steps < max_steps:
+        action = agent.act(obs)
+        obs, r, done, _,  _ = env.step(action)
+        reward += r
+        steps += 1
+
+    return reward
+
+
 def generate_gif(gif_name='Robot.gif', a=None, env=None, solution_name=None):
     if solution_name is not None:
         a = load_solution(name=solution_name)
@@ -228,9 +244,13 @@ def generate_gif(gif_name='Robot.gif', a=None, env=None, solution_name=None):
     a.fitness, imgs = evaluate(a, env, max_steps=a.config["max_steps"],
                                render=True)
     env.close()
-
     print(a)
 
+    if imgs[0] is None:
+        raise TypeError("The elements of imgs are None, check if the "
+                        "environment 'env' provided was created with "
+                        "render_mode='rgb_array'.")
+    
     imageio.mimsave(gif_name, imgs, duration=(1/50.0))
 
 
@@ -264,7 +284,7 @@ def ES(config):
             ind = Agent(Network, cfg, genes=genes)
             population.append(ind)
 
-        tasks = [evaluate.remote(a, env, max_steps=cfg["max_steps"]) 
+        tasks = [parallel_eval.remote(a, env, max_steps=cfg["max_steps"]) 
                        for a in population]
         pop_fitness = ray.get(tasks)
         
@@ -334,7 +354,7 @@ def CMAES(config):
             population.append(ind)
             genetic_material.append(genes)
 
-        tasks = [evaluate.remote(a, env, max_steps=cfg["max_steps"]) 
+        tasks = [parallel_eval.remote(a, env, max_steps=cfg["max_steps"]) 
                        for a in population]
         pop_fitness = ray.get(tasks)
         pop_fitness = [-x for x in pop_fitness]
@@ -343,9 +363,8 @@ def CMAES(config):
         optimizer.tell(population)
 
         elite.genes = optimizer.mean
-        tasks = evaluate.remote(elite, env, max_steps=cfg["max_steps"])
+        tasks = parallel_eval.remote(elite, env, max_steps=cfg["max_steps"])
         elite.fitness = ray.get(tasks)
-        elite.fitness = -elite.fitness
         
         fits.append(elite.fitness)
         total_evals.append((len(population)+1) * (gen+1))
@@ -364,6 +383,6 @@ def CMAES(config):
     return elite
 
 if __name__ == "__main__":
-    list = [1, 2, 3]
-    list = -list
-    print(list)
+    
+    pass
+

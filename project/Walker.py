@@ -4,7 +4,7 @@ import evolve_tools as et
 
 walker = np.array([
     [3, 3, 3, 3, 3],
-    [3, 3, 3, 0, 3],
+    [3, 3, 3, 0, 1],
     [3, 3, 0, 3, 3],
     [3, 3, 0, 3, 3],
     [3, 3, 0, 3, 3]
@@ -24,9 +24,12 @@ config = {
     "n": 3 # The network h_size = n*n_in, None sets h_size to 32
 }
 
-for i in range(3):
-    print(f"\n\nRun #{i+1} with  n = {config['n']}")
-    config["plot_name"] = f"Run #{i+1}"
-    a = et.ES(config)
-    print(a)
+a = et.ES(config)
+env = et.make_env(config["env_name"], robot=config["robot"],
+                  render_mode="rgb_array")
+et.generate_gif(a=a, env=env)
 
+# cfg = et.get_cfg(config["env_name"], robot=config["robot"],
+#                   n=config["n"]) # Get network dims
+# cfg = {**config, **cfg} # Merge configs
+# et.save_solution(a, cfg)

@@ -10,7 +10,7 @@ elites com cma daí ela é mais otimizada
 space, ent é esse q tem q ver
 ====================================================================
 OK entender a paralelização 
-- testar o cmaes
+OK testar o cmaes
 - primeiro só usa o algoritmo ganhador pras politicas (sem considerar o budget)
     - ATENÇÃO: lembra q sua rede neural é mais pesada q a dos outros,
     tem mais feature mas daí vai ser trampo pra treinar
@@ -22,7 +22,4 @@ OK entender a paralelização
 behaviour and novelty na evolução das politicas, se for o tempo,
 perguntar pro prof o q ele recomenda
 ====================================================================
-- paralelizar cmaes
-- terminar o teste do cmaes
-- incrementar o codigo do ES pra mostrar o gif tbm
 - ir otimizando o ES
