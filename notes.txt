@@ -11,7 +11,7 @@ space, ent é esse q tem q ver
 ====================================================================
 OK entender a paralelização 
 OK testar o cmaes
-- primeiro só usa o algoritmo ganhador pras politicas (sem considerar o budget)
+OK primeiro só usa o algoritmo ganhador pras politicas (sem considerar o budget)
     - ATENÇÃO: lembra q sua rede neural é mais pesada q a dos outros,
     tem mais feature mas daí vai ser trampo pra treinar
 - replica pros tres coisos
@@ -22,4 +22,3 @@ OK testar o cmaes
 behaviour and novelty na evolução das politicas, se for o tempo,
 perguntar pro prof o q ele recomenda
 ====================================================================
-- ir otimizando o ES

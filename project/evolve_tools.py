@@ -279,8 +279,9 @@ def ES(config):
     bar = tqdm(range(cfg["generations"]))
     for gen in bar:
         population = []
+        sigma = (1-gen/cfg["generations"])
         for i in range(cfg["lambda"]):
-            genes = theta + np.random.randn(len(theta)) * cfg["sigma"]
+            genes = theta + np.random.randn(len(theta)) * sigma
             ind = Agent(Network, cfg, genes=genes)
             population.append(ind)
 
@@ -384,5 +385,8 @@ def CMAES(config):
 
 if __name__ == "__main__":
     
-    pass
+    a = list(range(1, 4 + 1))
+    print(a)
+
+
 
