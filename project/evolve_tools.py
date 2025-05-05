@@ -171,7 +171,7 @@ def make_env(env_name, seed=None, robot=None, **kwargs):
         env = gym.make(env_name, body=robot, connections=connections, **kwargs)
     env.robot = robot
     if seed is not None:
-        env.seed(seed)
+        env.reset(seed=seed)
         
     return env
 
@@ -189,8 +189,12 @@ def get_cfg(env_name, robot, n=None):
     return cfg
 
 
-def evaluate(agent, env, max_steps=500, render=False):
-    obs, _ = env.reset()
+def evaluate(agent, env, max_steps=500, render=False, seed=None):
+    if seed is not None:
+        obs, _ = env.reset(seed=seed)
+    else:
+        obs, _ = env.reset()
+
     agent.model.reset()
     reward = 0
     steps = 0
@@ -228,7 +232,13 @@ def parallel_eval(agent, env, max_steps=500):
     return reward
 
 
-def generate_gif(gif_name='Robot.gif', a=None, env=None, solution_name=None):
+def generate_gif(gif_name='Robot.gif',
+                 a=None,
+                 env=None,
+                 solution_name=None,
+                 duration=(1/50.0),
+                 verbose=True):
+
     if solution_name is not None:
         a = load_solution(name=solution_name)
         cfg = a.config
@@ -238,20 +248,22 @@ def generate_gif(gif_name='Robot.gif', a=None, env=None, solution_name=None):
         raise ValueError("If there is no solution name, there must be both"
                          "an a and env.")
     
-    env.metadata['render_fps'] = 50
+    env.metadata['render_fps'] = 1/duration
     env.metadata.update({'render_modes': ["rgb_array"]})
 
     a.fitness, imgs = evaluate(a, env, max_steps=a.config["max_steps"],
                                render=True)
     env.close()
-    print(a)
+
+    if verbose:
+        print(a)
 
     if imgs[0] is None:
         raise TypeError("The elements of imgs are None, check if the "
                         "environment 'env' provided was created with "
                         "render_mode='rgb_array'.")
     
-    imageio.mimsave(gif_name, imgs, duration=(1/50.0))
+    imageio.mimsave(gif_name, imgs, duration=duration)
 
 
 def ES(config):
@@ -384,8 +396,31 @@ def CMAES(config):
 
 if __name__ == "__main__":
     
-    a = list(range(1, 4 + 1))
-    print(a)
+    walker = np.array([
+    [3, 3, 3, 3, 3],
+    [3, 3, 3, 0, 3],
+    [3, 3, 0, 3, 3],
+    [3, 3, 0, 3, 3],
+    [3, 3, 0, 3, 3]
+    ])
+
+    config = {
+        "env_name": "Walker-v0",
+        "robot": walker,
+        "generations": 10,
+        "lambda": 10, # Population size
+        "sigma": 1.3, # initial distribution variance
+        "max_steps": 100, # to change to 500
+        "plot_name": "CMAES.png",
+        "plot":False,
+        "n": None # The network h_size = n*n_in, None sets h_size to 32
+    }
+
+    for i in range(3):
+        print(f"\n\nRun #{i+1} with n = {config['n']}")
+        config["plot_name"] = f"Run #{i+1}"
+        a = CMAES(config)
+        print(a)
 
 
 
