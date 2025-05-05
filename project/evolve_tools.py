@@ -347,12 +347,11 @@ def CMAES(config):
         genetic_material = []
         bar2 = tqdm(range(optimizer.population_size))
         bar2.set_description(f'gen #{gen+1}')
-
-        for _ in bar2:
-            genes = optimizer.ask()
             
-            ind = Agent(Network, cfg, genes=genes)
-            population.append(ind)
+        genomes = optimizer.ask()
+
+        for genes in genomes:
+            population.append(Agent(Network, cfg, genes=genes))
             genetic_material.append(genes)
 
         tasks = [parallel_eval.remote(a, env, max_steps=cfg["max_steps"]) 
