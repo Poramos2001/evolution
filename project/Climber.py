@@ -1,5 +1,38 @@
 import numpy as np
 import evolve_tools as et
+from ribs.archives import GridArchive
+from ribs.emitters import EvolutionStrategyEmitter as CMAME
+from ribs.schedulers import Scheduler
+
+# Set up the archive
+archive = GridArchive(
+    dims=[100, 100],  # Dimensions of the archive grid
+    ranges=[(-5, 5), (-5, 5)],  # Ranges for each dimension
+    seed=42  # Random seed for reproducibility
+)
+
+# Configure the CMA-ES emitter
+emitter = CMAME(
+    archive,
+    x0=np.zeros(2),  # Initial solution
+    sigma0=0.5,  # Initial standard deviation
+    batch_size=10  # Number of solutions to generate per iteration
+)
+
+# Set up the optimizer
+optimizer = Scheduler(archive, [emitter])
+
+# Run the MAP-Elites algorithm
+for generation in range(100):  # Number of generations
+    solutions = optimizer.ask()
+    objective_values = np.array([objective_function(sol) for sol in solutions])
+    optimizer.tell(objective_values)
+
+# Retrieve the best solution
+best_solution = archive.best_elite
+print("Best solution:", best_solution.solution)
+print("Best objective value:", best_solution.objective)
+
 
 
 climber = np.array([

@@ -307,9 +307,9 @@ if __name__ == "__main__":
         "n": 1 # The network h_size = n*n_in, None sets h_size to 32
     }
 
-    lambdas = [30, 40, 50]
-    sigmas =[0.7, 1.3, 2, 3]
-    ns = [1, 2]
+    lambdas = [40]
+    sigmas =[1.3]
+    ns = [1]
 
     for n in ns:
         config["n"] = n

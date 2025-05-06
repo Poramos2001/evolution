@@ -12,6 +12,7 @@ dependencies = [
     "ipykernel>=6.29.5",
     "matplotlib>=3.10.1",
     "ray>=2.44.1",
+    "ribs>=0.7.1",
     "setuptools>=78.1.0",
     "torch>=2.6.0",
     "tqdm>=4.67.1",

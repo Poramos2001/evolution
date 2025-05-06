@@ -396,7 +396,6 @@ def CMAES(config):
     return elite
 
 
-
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
