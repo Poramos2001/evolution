@@ -15,6 +15,7 @@ from evogym import sample_robot
 import copy
 
 import cma
+import imageio
 
 
 # ---------------------- Network ----------------------
@@ -38,9 +39,9 @@ class Network(nn.Module):
         return x
     
 # ==== AJOUTS UTILITAIRES ======================================================
-GRID_SHAPE = (5, 7)            # (rows, cols)  = 35 cellules
+GRID_SHAPE = (5, 5)            # (rows, cols)  = 35 cellules
 N_MORPH = GRID_SHAPE[0] * GRID_SHAPE[1]
-CELL_MAX = 5                   # valeurs 0-5 incluses
+CELL_MAX = 4                  # valeurs 0-5 incluses
 PENALTY = -1e6
 
 def gene_to_body(g):           # g : (35,) float
@@ -142,7 +143,7 @@ def make_env(env_name, seed=None, robot=None, **kwargs):
         env = gym.make(env_name)
     else:
         connections = get_full_connectivity(robot)
-        env = gym.make(env_name, body=robot)
+        env = gym.make(env_name, body=robot, connections=connections, **kwargs)
     if seed is not None:
         env.seed(seed)
     return env
@@ -158,15 +159,21 @@ def evaluate(agent, body, env, max_steps=500, render=False):
     obs, _ = env.reset()
     agent.model.reset()
     total = 0.0
+    if render:
+        imgs = []
     for _ in range(max_steps):
         if render:
-            env.render()
+            img = env.render() #mode='img'
+            imgs.append(img)
         full_act = agent.act(obs)          # 35 scalaires
         act = full_act[idx_act]            # on ne garde que les n_actuateurs
         obs, r, done, trunc, _ = env.step(act)
         total += r
         if done:
             break
+    
+    if render:
+        return total, imgs
     return total
 
 # ---------------------- Ray Remote Evaluation ----------------------
@@ -278,90 +285,42 @@ def load_solution(name="solution.json"):
 
 # ---------------------- Main ----------------------
 if __name__ == "__main__":
-    walker = np.array([
-        [0, 0, 3, 1, 3, 0, 0],
-        [0, 3, 1, 3, 1, 3, 0],
-        [3, 3, 4, 0, 4, 3, 3],
-        [3, 4, 4, 0, 4, 4, 3],
-        [0, 4, 0, 0, 0, 4, 0]
+    climber = np.array([
+    [3, 3, 4, 3, 3],
+    [0, 4, 4, 2, 0],
+    [0, 2, 4, 4, 0],
+    [1, 4, 1, 2, 1],
+    [3, 3, 1, 3, 3]
     ])
 
-    
-    
-    env_name = 'Walker-v0'
-    robot = walker
-
-    cfg = get_cfg(env_name, robot)
-    a = Agent(Network, cfg)
-
-    env = make_env(env_name, robot=walker)
-    s = env.reset()
-
-    # Evaluation
-    env = make_env(env_name, robot=walker)
-    reward = evaluate(a, walker, env, render=True)
-    print(f"Reward: {reward}")
-    env.close()
-
-
     config = {
-        "env_name": "Walker-v0",
-        "robot": walker,
-        "generations": 150,
-        "lambda": 20,
-        "mu": 5,
-        "sigma": 0.2,
+        "env_name": "Climber-v2",
+        "robot": climber,
+        "generations": 10,
+        "lambda": 10, # Population size
+        "sigma": 1.3, # initial distribution variance
         "lr": 1,
-        "max_steps": 500,
+        "max_steps": 100, # to change to 500
+        "plot_name": "CMAES.png",
+        "plot":False,
+        "n": None # The network h_size = n*n_in, None sets h_size to 32
     }
 
     a = CMA_ES(config)
 
-    best_body = gene_to_body(a.genes[:N_MORPH])
-
-    env = make_env(config["env_name"], robot=best_body)
-    evaluate(a, best_body, env, render=False)
-    env.close()
-
-    np.save("Walker.npy", a.genes)
-
-
-
-
-    config = {
-        "env_name": "Walker-v0",
-        "robot": walker,
-        "generations": 150,
-        "lambda": 20, # Population size
-        "mu": 5, # Parents pop size
-        "sigma": 0.2, # mutation std
-        "lr": 1, # Learning rate
-        "max_steps": 500,
-    }
-
     cfg = get_cfg(config["env_name"], robot=config["robot"]) # Get network dims
     cfg = {**config, **cfg} # Merge configs
-    a = Agent(Network, cfg)
-    a.genes = np.load("Walker.npy")
-
-
-    env = make_env(cfg["env_name"], robot=best_body)
-    a.fitness = evaluate(a, best_body, env, render=False)
-
-    env.close()
-    print(a.fitness)
-
-
     save_solution(a, cfg)
 
+    best_body = gene_to_body(a.genes[:N_MORPH])
 
-    a = load_solution(name="solution.json")
-    cfg = a.config
-    env = make_env(cfg["env_name"], robot=best_body)
-    a.fitness = evaluate(a, best_body, env, render=False)
+    env = make_env(config["env_name"], robot=best_body, render_mode='rgb_array')
+    env.metadata['render_fps'] = 50.0
+    env.metadata.update({'render_modes': ["rgb_array"]})
 
+    a.fitness, imgs = evaluate(a, best_body, env, render=True)
     env.close()
-    print(a.fitness)
+    imageio.mimsave("name.gif", imgs, duration=(1/50.0))
 
 
 
