@@ -15,6 +15,7 @@ config = {
     "robot": walker,
     "generations": 800,
     "lambda": 20, # Population size
+    "sigma": 1, # Initial std
     "mu": 5, # Parents pop size
     "lr": 1, # Learning rate
     "max_steps": 500, # to change to 500

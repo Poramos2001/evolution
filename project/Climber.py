@@ -13,8 +13,9 @@ climber = np.array([
 config = {
     "env_name": "Climber-v2",
     "robot": climber,
-    "generations": 100,
-    "lambda": 20, # Population size
+    "generations": 180,
+    "lambda": 50, # Population size
+    "sigma": 4, # Initial std
     "mu": 5, # Parents pop size
     "lr": 1, # Learning rate
     "max_steps": 500, # to change to 500

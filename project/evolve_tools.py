@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from cmaes import CMA
 import ray
+import random
 
 
 class Network(nn.Module):
@@ -291,7 +292,7 @@ def ES(config):
     bar = tqdm(range(cfg["generations"]))
     for gen in bar:
         population = []
-        sigma = (1-gen/cfg["generations"])
+        sigma = (1-gen/cfg["generations"])*cfg["sigma"]
         for i in range(cfg["lambda"]):
             genes = theta + np.random.randn(len(theta)) * sigma
             ind = Agent(Network, cfg, genes=genes)
@@ -393,6 +394,21 @@ def CMAES(config):
         plt.savefig(cfg["plot_name"])
 
     return elite
+
+
+
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
 
 if __name__ == "__main__":
     
